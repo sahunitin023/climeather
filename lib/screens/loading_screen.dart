@@ -1,6 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
-import 'package:geolocator/geolocator.dart';
 import 'package:flutter/material.dart';
+import 'package:clima_app/services/location.dart';
+import 'package:http/http.dart' as http;
 
 class LoadingScreen extends StatefulWidget {
   const LoadingScreen({Key? key}) : super(key: key);
@@ -10,30 +11,32 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+  @override
+  void initState() {
+    super.initState();
+    getLocation();
+  }
+
   void getLocation() async {
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are denied');
-      }
-    }
-    Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.low);
-    print(position);
+    Location location = Location();
+    await location.getCurrentLocation();
+    print(location.lat);
+    print(location.long);
+    await getData(location.lat, location.long);
+  }
+
+  Future<void> getData(double? lat, double? long) async {
+    http.Response response = await http.get(Uri.https(
+        'api.openweathermap.org', '/data/2.5/weather', {
+      'lat': '$lat',
+      'lon': '$long',
+      'appid': '4555d30ac810b12807360c33ad55b7e0'
+    }));
+    print(response.body);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            getLocation();
-          },
-          child: const Text('Get Location'),
-        ),
-      ),
-    );
+    return const Scaffold();
   }
 }
