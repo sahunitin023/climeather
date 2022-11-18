@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:clima_app/utilities/constants.dart';
+import 'package:clima_app/services/weather.dart';
 
 class LocationScreen extends StatefulWidget {
   const LocationScreen(this.locationWeather);
@@ -12,9 +13,11 @@ class LocationScreen extends StatefulWidget {
 }
 
 class _LocationScreenState extends State<LocationScreen> {
-  int? temp;
-  int? condition;
-  String? city;
+  WeatherModel weather = WeatherModel();
+  late int temp;
+  late String condition;
+  late String tempIcon;
+  late String city;
   @override
   void initState() {
     super.initState();
@@ -24,8 +27,9 @@ class _LocationScreenState extends State<LocationScreen> {
   void updateUI(dynamic weatherData) {
     double tempareture = weatherData['main']['temp'];
     temp = tempareture.toInt();
-    condition = weatherData['weather'][0]['id'];
+    tempIcon = weather.getWeatherIcon(weatherData['weather'][0]['id']);
     city = weatherData['name'];
+    condition = weather.getMessage(temp);
   }
 
   @override
@@ -44,7 +48,7 @@ class _LocationScreenState extends State<LocationScreen> {
         child: SafeArea(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            //crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -67,6 +71,25 @@ class _LocationScreenState extends State<LocationScreen> {
                   ),
                 ],
               ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.place,
+                    size: 35.0,
+                    color: Colors.white,
+                  ),
+                  const SizedBox(
+                    width: 10.0,
+                  ),
+                  Text(
+                    city,
+                    style: const TextStyle(
+                      fontFamily: 'Spartan MB',
+                      fontSize: 30.0,
+                    ),
+                  )
+                ],
+              ),
               Padding(
                 padding: const EdgeInsets.only(left: 15.0),
                 child: Row(
@@ -75,8 +98,8 @@ class _LocationScreenState extends State<LocationScreen> {
                       '$temp°',
                       style: kTempTextStyle,
                     ),
-                    const Text(
-                      '☀️',
+                    Text(
+                      tempIcon,
                       style: kConditionTextStyle,
                     ),
                   ],
@@ -85,7 +108,7 @@ class _LocationScreenState extends State<LocationScreen> {
               Padding(
                 padding: const EdgeInsets.only(right: 15.0),
                 child: Text(
-                  "It's 🍦 time in $city!",
+                  condition,
                   textAlign: TextAlign.right,
                   style: kMessageTextStyle,
                 ),
