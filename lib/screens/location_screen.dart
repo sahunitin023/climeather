@@ -19,13 +19,14 @@ class _LocationScreenState extends State<LocationScreen> {
   late String condition;
   late String tempIcon;
   late String city;
+  late String background;
   @override
   void initState() {
     super.initState();
-    updateUI(widget.locationWeather);
+    updateUI(widget.locationWeather, 'location_background.jpg');
   }
 
-  void updateUI(dynamic weatherData) {
+  void updateUI(dynamic weatherData, String image) {
     setState(() {
       if (weatherData == null) {
         temp = 0;
@@ -39,6 +40,7 @@ class _LocationScreenState extends State<LocationScreen> {
       tempIcon = weather.getWeatherIcon(weatherData['weather'][0]['id']);
       city = weatherData['name'];
       condition = weather.getMessage(temp);
+      background = image;
     });
   }
 
@@ -48,7 +50,7 @@ class _LocationScreenState extends State<LocationScreen> {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: const AssetImage('images/location_background.jpg'),
+            image: AssetImage('images/$background'),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
                 Colors.white.withOpacity(0.8), BlendMode.dstATop),
@@ -66,7 +68,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   TextButton(
                     onPressed: () async {
                       var weatherData = await weather.getLocationWeather();
-                      updateUI(weatherData);
+                      updateUI(weatherData, 'location_background.jpg');
                     },
                     child: const Icon(
                       Icons.near_me,
@@ -85,7 +87,7 @@ class _LocationScreenState extends State<LocationScreen> {
                       if (typedName != null) {
                         var weatherData =
                             await weather.getCityWeather(typedName);
-                        updateUI(weatherData);
+                        updateUI(weatherData, 'city_background.jpg');
                       }
                     },
                     child: const Icon(
