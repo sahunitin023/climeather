@@ -1,5 +1,4 @@
 // ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:clima_app/utilities/constants.dart';
 
@@ -11,6 +10,7 @@ class CityScreen extends StatefulWidget {
 }
 
 class _CityScreenState extends State<CityScreen> {
+  String? cityName;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -28,19 +28,36 @@ class _CityScreenState extends State<CityScreen> {
               Align(
                 alignment: Alignment.topLeft,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
                   child: const Icon(
-                    Icons.arrow_back_ios,
-                    size: 50.0,
+                    Icons.arrow_back,
+                    size: 40.0,
+                    color: Colors.white,
                   ),
                 ),
               ),
               Container(
                 padding: const EdgeInsets.all(20.0),
-                child: null,
+                child: TextField(
+                  style: const TextStyle(
+                    color: Colors.black,
+                  ),
+                  decoration: kCityTextFieldDecoration,
+                  onChanged: ((value) => cityName = value),
+                ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  if (cityName == null) {
+                    const AlertDialog(
+                      content: Text('Enter City Name'),
+                    );
+                  } else {
+                    Navigator.pop(context, cityName);
+                  }
+                },
                 child: const Text(
                   'Get Weather',
                   style: kButtonTextStyle,
