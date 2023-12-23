@@ -3,17 +3,20 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:weather_app_youtube/bloc/weather_bloc_bloc.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Position position;
+  const HomeScreen({super.key, required this.position});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  TextEditingController textEditingController = TextEditingController();
   Widget getWeatherIcon(int code) {
     switch (code) {
       case >= 200 && < 300:
@@ -46,12 +49,46 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  final weatherBloc = WeatherBlocBloc();
+
+  @override
+  void initState() {
+    weatherBloc.add(FetchWeatherEvent(widget.position));
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: IconButton(
+              icon: const Icon(Icons.search),
+              color: Colors.white,
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => SearchInput(
+                    hintText: 'Search',
+                    textController: textEditingController,
+                    onPressed: () {
+                      if (textEditingController.text.isNotEmpty) {
+                        weatherBloc.add(FetchWeatherbyCityNameEvent(
+                            textEditingController.text));
+                      }
+                      Navigator.pop(context);
+                    },
+                  ),
+                );
+              },
+            ),
+          )
+        ],
         backgroundColor: Colors.transparent,
         elevation: 0,
         systemOverlayStyle:
@@ -96,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
               BlocBuilder<WeatherBlocBloc, WeatherBlocState>(
+                bloc: weatherBloc,
                 builder: (context, state) {
                   if (state is WeatherBlocSuccess) {
                     return SizedBox(
@@ -280,11 +318,64 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     );
                   } else {
-                    return Container();
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    );
                   }
                 },
               )
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SearchInput extends StatelessWidget {
+  final TextEditingController textController;
+  final String hintText;
+  final void Function()? onPressed;
+  const SearchInput(
+      {required this.textController,
+      required this.hintText,
+      Key? key,
+      required this.onPressed})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shadowColor: Colors.black,
+      elevation: 25,
+      alignment: Alignment.topCenter,
+      child: TextField(
+        controller: textController,
+        decoration: InputDecoration(
+          suffixIcon: IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: onPressed,
+            color: const Color(0xff4338CA),
+          ),
+          filled: true,
+          enabled: true,
+          fillColor: Colors.white,
+          hintText: hintText,
+          hintStyle: const TextStyle(color: Colors.grey),
+          contentPadding:
+              const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
+          border: const OutlineInputBorder(
+            borderRadius: BorderRadius.all(Radius.circular(15.0)),
+          ),
+          enabledBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.white, width: 1.0),
+            borderRadius: BorderRadius.all(Radius.circular(15.0)),
+          ),
+          focusedBorder: const OutlineInputBorder(
+            borderSide: BorderSide(color: Colors.white, width: 2.0),
+            borderRadius: BorderRadius.all(Radius.circular(15.0)),
           ),
         ),
       ),
